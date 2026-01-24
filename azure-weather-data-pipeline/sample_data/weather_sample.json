@@ -1,0 +1,12 @@
+{
+  "location": {
+    "name": "Bangalore",
+    "country": "India"
+  },
+  "current": {
+    "temp_c": 28.0,
+    "humidity": 60,
+    "wind_kph": 12.3,
+    "last_updated": "2026-01-24 10:00"
+  }
+}

@@ -1,0 +1,19 @@
+Weather API
+   |
+   v
+Azure Data Factory
+   |
+   v
+Azure Data Lake Storage Gen2
+   ├── bronze  (raw JSON)
+   ├── silver  (cleaned Parquet)
+   └── gold    (aggregated Parquet)
+   |
+   v
+Azure Databricks (PySpark)
+   |
+   v
+Azure SQL Database
+   |
+   v
+Power BI Dashboard
