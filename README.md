@@ -12,7 +12,26 @@ The pipeline is designed to simulate a real-world data engineering workflow on A
 
 ## Architecture
 
-![Azure Data Pipeline Architecture](architecture/azure_weather_architecture_diagram.png)
+```mermaid
+graph LR
+    API(Weather API) -->|JSON| ADF{Azure Data Factory}
+    ADF -->|Ingest| ADLS_B[(Bronze: Raw)]
+    ADLS_B -->|PySpark| ADB((Azure Databricks))
+    ADB -->|Cleanse| ADLS_S[(Silver: Parquet)]
+    ADLS_S -->|PySpark| ADB
+    ADB -->|Aggregate| ADLS_G[(Gold: Parquet)]
+    ADLS_G -->|Copy| ADF
+    ADF -->|Upsert| SQL[(Azure SQL DB)]
+    SQL -->|DirectQuery| PBI[Power BI Dashboard]
+    
+    style ADF fill:#0078d4,color:#fff
+    style ADB fill:#ff3621,color:#fff
+    style ADLS_B fill:#0072c6,color:#fff
+    style ADLS_S fill:#0072c6,color:#fff
+    style ADLS_G fill:#0072c6,color:#fff
+    style SQL fill:#00bc22,color:#fff
+    style PBI fill:#f2c811,color:#000
+```
 
 1. **Ingestion Layer (API -> ADF -> ADLS Gen2)**
    - External source: REST API (`api.weatherapi.com`).
