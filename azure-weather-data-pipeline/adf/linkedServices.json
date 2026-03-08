@@ -1,0 +1,51 @@
+{
+    "linkedServices": [
+        {
+            "name": "WeatherAPILinkedService",
+            "properties": {
+                "type": "RestService",
+                "typeProperties": {
+                    "url": "https://api.weatherapi.com/v1/current.json",
+                    "enableServerCertificateValidation": true,
+                    "authenticationType": "Anonymous"
+                }
+            }
+        },
+        {
+            "name": "AzureDataLakeStorageGen2LinkedService",
+            "properties": {
+                "type": "AzureBlobFS",
+                "typeProperties": {
+                    "url": "https://<YOUR_STORAGE_ACCOUNT_NAME>.dfs.core.windows.net",
+                    "accountKey": {
+                        "type": "SecureString",
+                        "value": "<YOUR_ACCOUNT_KEY>"
+                    }
+                }
+            }
+        },
+        {
+            "name": "AzureDatabricksLinkedService",
+            "properties": {
+                "type": "AzureDatabricks",
+                "typeProperties": {
+                    "domain": "https://<YOUR_DATABRICKS_INSTANCE>.azuredatabricks.net",
+                    "accessToken": {
+                        "type": "SecureString",
+                        "value": "<YOUR_DATABRICKS_TOKEN>"
+                    },
+                    "existingClusterId": "<YOUR_CLUSTER_ID>"
+                }
+            }
+        },
+        {
+            "name": "AzureSqlDatabaseLinkedService",
+            "properties": {
+                "type": "AzureSqlDatabase",
+                "typeProperties": {
+                    "connectionString": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=<YOUR_SQL_SERVER_NAME>.database.windows.net;Initial Catalog=<YOUR_DATABASE_NAME>;User ID=<YOUR_USERNAME>;Password=<YOUR_PASSWORD>"
+                }
+            }
+        }
+    ]
+}

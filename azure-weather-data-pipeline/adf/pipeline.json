@@ -1,0 +1,180 @@
+{
+    "name": "Weather_Ingestion_and_Processing_Pipeline",
+    "properties": {
+        "activities": [
+            {
+                "name": "FetchWeatherAPI",
+                "description": "Calls REST API to get weather data and dumps raw JSON into the Bronze container in ADLS Gen2.",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 3,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "RestSource",
+                        "httpRequestTimeout": "00:01:40",
+                        "requestInterval": "00.00:00:00.010",
+                        "requestMethod": "GET"
+                    },
+                    "sink": {
+                        "type": "JsonSink",
+                        "storeSettings": {
+                            "type": "AzureBlobFSWriteSettings",
+                            "copyBehavior": "PreserveHierarchy"
+                        },
+                        "formatSettings": {
+                            "type": "JsonWriteSettings"
+                        }
+                    },
+                    "enableStaging": false
+                },
+                "inputs": [
+                    {
+                        "referenceName": "WeatherAPIDataset",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "ADLS_Bronze_Json",
+                        "type": "DatasetReference"
+                    }
+                ]
+            },
+            {
+                "name": "TransformBronzeToSilver",
+                "description": "Runs Databricks Notebook to process Bronze JSON data to Silver Parquet.",
+                "type": "DatabricksNotebook",
+                "dependsOn": [
+                    {
+                        "activity": "FetchWeatherAPI",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "notebookPath": "/Users/user@domain.com/azure-weather-data-pipeline/databricks/silver_transform"
+                },
+                "linkedServiceName": {
+                    "referenceName": "AzureDatabricksLinkedService",
+                    "type": "LinkedServiceReference"
+                }
+            },
+            {
+                "name": "AggregateSilverToGold",
+                "description": "Runs Databricks Notebook to aggregate Silver Parquet to Gold Parquet.",
+                "type": "DatabricksNotebook",
+                "dependsOn": [
+                    {
+                        "activity": "TransformBronzeToSilver",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "notebookPath": "/Users/user@domain.com/azure-weather-data-pipeline/databricks/gold_aggregation"
+                },
+                "linkedServiceName": {
+                    "referenceName": "AzureDatabricksLinkedService",
+                    "type": "LinkedServiceReference"
+                }
+            },
+            {
+                "name": "CopyGoldToAzureSQL",
+                "description": "Copies finalized data from Gold ADLS container to Azure SQL Database.",
+                "type": "Copy",
+                "dependsOn": [
+                    {
+                        "activity": "AggregateSilverToGold",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 2,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "ParquetSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": true,
+                            "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                            "type": "ParquetReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "AzureSqlSink",
+                        "writeBehavior": "upsert",
+                        "upsertSettings": {
+                            "useTempDB": true,
+                            "keys": [
+                                "city",
+                                "country"
+                            ]
+                        },
+                        "sqlWriterUseTableLock": false,
+                        "disableMetricsCollection": false
+                    },
+                    "enableStaging": false,
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "typeConversion": true,
+                        "typeConversionSettings": {
+                            "allowDataTruncation": true,
+                            "treatBooleanAsNumber": false
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "ADLS_Gold_Parquet",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "AzureSqlWeatherGoldTable",
+                        "type": "DatasetReference"
+                    }
+                ]
+            }
+        ],
+        "folder": {
+            "name": "Weather_Pipelines"
+        },
+        "annotations": []
+    }
+}
