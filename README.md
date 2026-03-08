@@ -52,27 +52,28 @@ The pipeline is designed to simulate a real-world data engineering workflow on A
 
 ## Repository Structure
 
+
 ```text
 azure-weather-data-pipeline/
 ├── adf/
-│   ├── linkedServices.json        # ADF connection settings (ADLS, SQL, Databricks, API)
-│   └── pipeline.json              # ADF pipeline definition (Data movement & Orchestration)
+│   ├── linkedServices.json        # ADF connection settings (ADLS, SQL, Databricks, REST API)
+│   └── pipeline.json              # ADF pipeline definition (Data movement & Orchestration DAG)
 ├── architecture/
-│   └── architecture.txt           # Text-based architecture diagram
+│   └── azure_weather_architecture_diagram.png # System Architecture Image
 ├── databricks/
-│   ├── bronze_ingestion.py        # Validates and loads raw API JSON
-│   ├── silver_transform.py        # Cleans, flattens, and type-casts data to Parquet
-│   ├── gold_aggregation.py        # Aggregates city-level weather metrics to Parquet
-│   └── mount_storage.py           # Mounts ADLS to Databricks DBFS securely
+│   ├── bronze_ingestion.py        # Validates and loads raw multi-line API JSON
+│   ├── silver_transform.py        # Cleans, flattens nesting, and enforces schema (Parquet)
+│   ├── gold_aggregation.py        # City-level aggregations (max temp, avg humidity) (Parquet)
+│   └── mount_storage.py           # Mounts ADLS to Databricks DBFS via Service Principals
 ├── infrastructure/
-│   └── setup_azure_resources.sh   # Bash script to provision ADLS Gen2 using Azure CLI
+│   └── setup_azure_resources.sh   # Bash script to provision ADLS Gen2 programmatically
 ├── powerbi/
-│   └── README.md                  # Instructions for Power BI connection and visuals
+│   └── README.md                  # Instructions for Power BI DirectQuery/Import connections
 ├── sample_data/
-│   └── weather_sample.json        # Example raw API response
+│   └── weather_sample.json        # Example raw API response schema
 └── sql/
-    ├── create_weather_gold_table.sql # SQL DDL for Gold layer serving table
-    └── sample_queries.sql         # Example analytical queries
+    ├── create_weather_gold_table.sql # SQL DDL for Gold layer serving table (matches Gold Parquet schema)
+    └── sample_queries.sql         # Example analytical T-SQL queries
 ```
 
 ---
