@@ -15,11 +15,18 @@ The pipeline is designed to simulate a real-world data engineering workflow on A
 ```mermaid
 graph LR
     API(Weather API) -->|JSON| ADF{Azure Data Factory}
-    ADF -->|Ingest| ADLS_B[(Bronze: Raw)]
+    
+    subgraph ADLS[Azure Data Lake Storage Gen2]
+        ADLS_B[(Bronze: Raw)]
+        ADLS_S[(Silver: Parquet)]
+        ADLS_G[(Gold: Parquet)]
+    end
+    
+    ADF -->|Ingest| ADLS_B
     ADLS_B -->|PySpark| ADB((Azure Databricks))
-    ADB -->|Cleanse| ADLS_S[(Silver: Parquet)]
+    ADB -->|Cleanse| ADLS_S
     ADLS_S -->|PySpark| ADB
-    ADB -->|Aggregate| ADLS_G[(Gold: Parquet)]
+    ADB -->|Aggregate| ADLS_G
     ADLS_G -->|Copy| ADF
     ADF -->|Upsert| SQL[(Azure SQL DB)]
     SQL -->|DirectQuery| PBI[Power BI Dashboard]
@@ -31,6 +38,7 @@ graph LR
     style ADLS_G fill:#0072c6,color:#fff
     style SQL fill:#00bc22,color:#fff
     style PBI fill:#f2c811,color:#000
+    style ADLS fill:#e6f2ff,stroke:#0072c6,stroke-width:2px,stroke-dasharray: 5 5
 ```
 
 1. **Ingestion Layer (API -> ADF -> ADLS Gen2)**
