@@ -38,7 +38,7 @@ graph LR
     style ADLS_G fill:#0072c6,color:#fff
     style SQL fill:#00bc22,color:#fff
     style PBI fill:#f2c811,color:#000
-    style ADLS fill:#e6f2ff,stroke:#0072c6,stroke-width:2px,stroke-dasharray: 5 5
+    style ADLS fill:none,stroke:#0072c6,stroke-width:2px,stroke-dasharray: 5 5
 ```
 
 1. **Ingestion Layer (API -> ADF -> ADLS Gen2)**
